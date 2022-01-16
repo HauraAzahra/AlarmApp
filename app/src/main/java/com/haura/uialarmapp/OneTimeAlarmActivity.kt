@@ -1,10 +1,11 @@
 package com.haura.uialarmapp
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import com.haura.uialarmapp.databinding.ActivityMainBinding
+import com.haura.uialarmapp.fragment.DatePickerFragment
+import com.haura.uialarmapp.fragment.TimePickerFragment
 import com.haura.uialarmapp.room.Alarm
 import com.haura.uialarmapp.room.AlarmDB
 import kotlinx.android.synthetic.main.activity_one_time_alarm.*
@@ -12,8 +13,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.time.DayOfWeek
-import java.time.MonthDay
 import java.util.*
 
 class OneTimeAlarmActivity : AppCompatActivity(),View.OnClickListener, DatePickerFragment.DialogDateListener, TimePickerFragment.DialogTimeListener{

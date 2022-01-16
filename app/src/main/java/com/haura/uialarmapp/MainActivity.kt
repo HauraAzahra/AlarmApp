@@ -1,15 +1,15 @@
 package com.haura.uialarmapp
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.haura.uialarmapp.databinding.ActivityMainBinding
-import com.haura.uialarmapp.room.Alarm
+import androidx.recyclerview.widget.RecyclerView
+import com.haura.uialarmapp.adapter.AlarmAdapter
 import com.haura.uialarmapp.room.AlarmDB
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_one_time_alarm.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,8 +19,21 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    val db by lazy { AlarmDB (this) }
-    lateinit var alarmAdapter : AlarmAdapter
+    val db by lazy { AlarmDB(this) }
+    lateinit var alarmAdapter: AlarmAdapter
+
+    // perubahan onStart menjadi onResume dilakukan untuk menghilangkan bug penambahan alarm
+    // sehingga data akan diperbarui meskpiun MainActivity ini sebelumnya dalam kondisi onPause
+    override fun onResume() {
+        super.onResume()
+        // Menghapus CoroutineScope karena LiveData tidak dapat berjalan di background thread.
+        // LiveData digunakan agar recyclerview dapat memperbarui data secara langsung
+        // tanpa harus melalui lifecycle onResume ataupun onCreate (memulai ulang activity)
+        db.alarmDao().getAlarm().observe(this@MainActivity) {
+            alarmAdapter.setData(it)
+            Log.d("MainActivity", "dbresponse: $it")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,15 +50,41 @@ class MainActivity : AppCompatActivity() {
         rv_reminder_alarm.apply {
             layoutManager = LinearLayoutManager(applicationContext)
             adapter = alarmAdapter
+            swipeToDelete(this)
         }
     }
 
+    private fun swipeToDelete(recyclerView: RecyclerView) {
+        ItemTouchHelper(object :
+            ItemTouchHelper.SimpleCallback(
+                0,
+                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val deletedItem = alarmAdapter.alarms.get(viewHolder.adapterPosition)
+                // delete item
+                CoroutineScope(Dispatchers.IO).launch {
+                    db.alarmDao().deleteAlarm(deletedItem)
+                }
+                alarmAdapter.notifyItemRemoved(viewHolder.adapterPosition)
+            }
+        }).attachToRecyclerView(recyclerView)
+    }
+
     private fun initAlarmType() {
-        view_set_one_time_alarm.setOnClickListener{
+        view_set_one_time_alarm.setOnClickListener {
             startActivity(Intent(this, OneTimeAlarmActivity::class.java))
         }
 
-        view_set_repeating_alarm.setOnClickListener{
+        view_set_repeating_alarm.setOnClickListener {
             startActivity(Intent(this, RepeatingAlarmActivity::class.java))
         }
     }
@@ -60,22 +99,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initDateToday() {
-        val dateNow : Date = Calendar.getInstance().time
+        val dateNow: Date = Calendar.getInstance().time
         val dateFormat = SimpleDateFormat("E, dd MMM yyyy", Locale.getDefault())
         val formattedDate: String = dateFormat.format(dateNow)
 
         tv_date_today.text = formattedDate
 
-    }
-
-    override fun onStart() {
-        super.onStart()
-        CoroutineScope(Dispatchers.IO).launch {
-            val alarms = db.alarmDao().getAlarm()
-            Log.d("MainActivity", "dbresponse: $alarms")
-            withContext(Dispatchers.Main){
-                alarmAdapter.setData(alarms)
-            }
-        }
     }
 }
