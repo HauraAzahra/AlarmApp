@@ -1,10 +1,8 @@
 package com.haura.uialarmapp.room
 
 import android.graphics.Movie
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.TypeConverters
+import androidx.lifecycle.LiveData
+import androidx.room.*
 
 @Dao
 interface AlarmDao {
@@ -12,6 +10,10 @@ interface AlarmDao {
     fun addAlarm (alarm : Alarm)
 
     @Query ("SELECT * FROM alarm")
-    fun getAlarm():List<Alarm>
+    // LiveData untuk memberitahu perubahan data yang terjadi di activity secara langsung
+    // sehingga recyclerview dapat memperbarui data secara langsung
+    fun getAlarm(): LiveData<List<Alarm>>
 
+    @Delete
+    fun deleteAlarm(alarm: Alarm)
 }

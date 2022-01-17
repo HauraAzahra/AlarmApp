@@ -14,11 +14,11 @@
             android:enabled="true"
             android:exported="true"></receiver>
         <receiver
-            android:name=".TimePickerFragment"
+            android:name=".fragment.TimePickerFragment"
             android:enabled="true"
             android:exported="true" />
         <receiver
-            android:name=".DatePickerFragment"
+            android:name=".fragment.DatePickerFragment"
             android:enabled="true"
             android:exported="true" />
 

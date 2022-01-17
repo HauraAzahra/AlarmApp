@@ -1,10 +1,8 @@
-package com.haura.uialarmapp
+package com.haura.uialarmapp.fragment
 
 import android.app.Dialog
 import android.app.TimePickerDialog
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.widget.TimePicker
 import androidx.fragment.app.DialogFragment
