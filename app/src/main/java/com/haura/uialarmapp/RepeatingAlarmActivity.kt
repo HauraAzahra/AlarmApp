@@ -1,8 +1,8 @@
 package com.haura.uialarmapp
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import com.haura.uialarmapp.databinding.ActivityMainBinding
 import com.haura.uialarmapp.fragment.DatePickerFragment
 import com.haura.uialarmapp.fragment.TimePickerFragment
@@ -15,11 +15,12 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class RepeatingAlarmActivity : AppCompatActivity(), View.OnClickListener, DatePickerFragment.DialogDateListener, TimePickerFragment.DialogTimeListener {
+class RepeatingAlarmActivity : AppCompatActivity(), View.OnClickListener,
+    DatePickerFragment.DialogDateListener, TimePickerFragment.DialogTimeListener {
 
     private var binding: ActivityMainBinding? = null
     private lateinit var alarmReceiver: AlarmReceiver
-    val db by lazy { AlarmDB (this) }
+    val db by lazy { AlarmDB(this) }
 
     companion object {
         private const val TIME_PICKER_REPEAT_TAG = "TimePickerRepeat"
@@ -38,23 +39,32 @@ class RepeatingAlarmActivity : AppCompatActivity(), View.OnClickListener, DatePi
     }
 
     override fun onClick(v: View) {
-        when(v.id){
+        when (v.id) {
 
             R.id.btn_set_time_repeating -> {
                 val timePickerFragmentRepeating = TimePickerFragment()
-                timePickerFragmentRepeating.show(supportFragmentManager, TIME_PICKER_REPEAT_TAG
+                timePickerFragmentRepeating.show(
+                    supportFragmentManager, TIME_PICKER_REPEAT_TAG
                 )
             }
 
             R.id.btn_add_set_repeating_alarm -> {
                 val repeatTime = tv_repeating_time.text.toString()
                 val repeatMessage = et_note_repeating.text.toString()
-                alarmReceiver.setRepeatingAlarm(this, AlarmReceiver.TYPE_REPEATING,
-                    repeatTime, repeatMessage)
+                alarmReceiver.setRepeatingAlarm(
+                    this, AlarmReceiver.TYPE_REPEATING,
+                    repeatTime, repeatMessage
+                )
 
                 CoroutineScope(Dispatchers.IO).launch {
                     db.alarmDao().addAlarm(
-                        Alarm(0, repeatTime, "Repeating Alarm",repeatMessage)
+                        Alarm(
+                            0,
+                            repeatTime,
+                            "Repeating Alarm",
+                            repeatMessage,
+                            AlarmReceiver.TYPE_REPEATING
+                        )
                     )
 
                     finish()
@@ -62,7 +72,7 @@ class RepeatingAlarmActivity : AppCompatActivity(), View.OnClickListener, DatePi
             }
 
             R.id.btn_cancel_set_repeating_alarm -> {
-                alarmReceiver.cancelAlarmRepeating(this, AlarmReceiver.TYPE_REPEATING)
+                finish()
             }
         }
     }
@@ -78,11 +88,13 @@ class RepeatingAlarmActivity : AppCompatActivity(), View.OnClickListener, DatePi
 
         // Set text dari textview berdasarkan tag
         when (tag) {
-            TIME_PICKER_REPEAT_TAG -> tv_repeating_time.text = dateFormatRepeating.format(calendar.time)
+            TIME_PICKER_REPEAT_TAG -> tv_repeating_time.text =
+                dateFormatRepeating.format(calendar.time)
             else -> {
             }
         }
     }
+
     override fun onDialogDateSet(tag: String?, year: Int, month: Int, dayOfMonth: Int) {
     }
 
