@@ -21,7 +21,8 @@ class AlarmDiffUtil(private val oldList: List<Alarm>, private val newList: List<
         val newData = newList[newItemPosition]
         return oldData.id == newData.id
                 && oldData.date == newData.date
-                && oldData.time == oldData.time
-                && oldData.note == oldData.note
+                && oldData.time == newData.time
+                && oldData.note == newData.note
+                && oldData.type == newData.type
     }
 }

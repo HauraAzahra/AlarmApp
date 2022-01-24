@@ -13,14 +13,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     val db by lazy { AlarmDB(this) }
-    lateinit var alarmAdapter: AlarmAdapter
+    private lateinit var alarmAdapter: AlarmAdapter
+    private lateinit var alarmReceiver: AlarmReceiver
 
     // perubahan onStart menjadi onResume dilakukan untuk menghilangkan bug penambahan alarm
     // sehingga data akan diperbarui meskpiun MainActivity ini sebelumnya dalam kondisi onPause
@@ -39,6 +39,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        alarmReceiver = AlarmReceiver()
+
         initAlarmType()
         initTimeToday()
         initDateToday()
@@ -46,7 +48,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView() {
-        alarmAdapter = AlarmAdapter(arrayListOf())
+        alarmAdapter = AlarmAdapter()
         rv_reminder_alarm.apply {
             layoutManager = LinearLayoutManager(applicationContext)
             adapter = alarmAdapter
@@ -69,12 +71,17 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val deletedItem = alarmAdapter.alarms.get(viewHolder.adapterPosition)
+                // TODO Cancel alarm by type when item of RecyclerView onSwiped()
+                val typeOfAlarm = alarmAdapter.alarms[viewHolder.adapterPosition].type
+                alarmReceiver.cancelAlarm(this@MainActivity, typeOfAlarm)
+
+                val deletedItem = alarmAdapter.alarms[viewHolder.adapterPosition]
                 // delete item
                 CoroutineScope(Dispatchers.IO).launch {
                     db.alarmDao().deleteAlarm(deletedItem)
                 }
                 alarmAdapter.notifyItemRemoved(viewHolder.adapterPosition)
+
             }
         }).attachToRecyclerView(recyclerView)
     }
@@ -90,9 +97,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initTimeToday() {
-
         val timeNow = Calendar.getInstance()
-        val timeFormat = SimpleDateFormat("HH:mm")
+        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
         val formattedTime = timeFormat.format(timeNow.time)
 
         tv_time_today.text = formattedTime
@@ -104,6 +110,5 @@ class MainActivity : AppCompatActivity() {
         val formattedDate: String = dateFormat.format(dateNow)
 
         tv_date_today.text = formattedDate
-
     }
 }

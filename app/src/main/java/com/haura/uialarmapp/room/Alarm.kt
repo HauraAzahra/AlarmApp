@@ -9,5 +9,7 @@ data class Alarm (
     val id : Int,
     val time : String,
     val date : String,
-    val note : String
+    val note : String,
+    // TODO Add Type to Entity Database
+    val type : Int
 )

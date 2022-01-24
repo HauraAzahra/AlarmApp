@@ -19,7 +19,7 @@ class OneTimeAlarmActivity : AppCompatActivity(),View.OnClickListener, DatePicke
 
     private var binding: ActivityMainBinding? = null
     private lateinit var alarmReceiver: AlarmReceiver
-    val db by lazy {AlarmDB (this)}
+    private val db by lazy {AlarmDB (this)}
 
 
     companion object {
@@ -59,7 +59,7 @@ class OneTimeAlarmActivity : AppCompatActivity(),View.OnClickListener, DatePicke
 
                 CoroutineScope(Dispatchers.IO).launch {
                     db.alarmDao().addAlarm(
-                        Alarm(0, onceTime, onceDate, onceMessage)
+                        Alarm(0, onceTime, onceDate, onceMessage, AlarmReceiver.TYPE_ONE_TIME)
                     )
 
                     finish()
@@ -74,7 +74,7 @@ class OneTimeAlarmActivity : AppCompatActivity(),View.OnClickListener, DatePicke
             }
 
             R.id.btn_cancel_set_one_time_alarm -> {
-                alarmReceiver.cancelAlarmOneTime(this, AlarmReceiver.TYPE_ONE_TIME)
+                finish()
             }
         }
     }
